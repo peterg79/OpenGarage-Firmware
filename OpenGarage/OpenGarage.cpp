@@ -51,7 +51,11 @@ OptionStruct OpenGarage::options[] = {
   {"auth", 0, 0, ""},
   {"dkey", 0, 0, DEFAULT_DKEY},
   {"name", 0, 0, DEFAULT_NAME},
-  {"iftt", 0, 0, ""}
+  {"iftt", 0, 0, ""},
+  {"mqs", 0, 0, ""},
+  {"mqp", 1883, 65535, ""},
+  {"mqts", 0, 0, DEFAULT_MQTT_TOPIC_STATUS},
+  {"mqtc", 0, 0, DEFAULT_MQTT_TOPIC_COMMAND}
 };
     
 void OpenGarage::begin() {
@@ -206,6 +210,13 @@ bool OpenGarage::get_cloud_access_en() {
       return true;
     }
   }
+  return false;
+}
+
+bool OpenGarage::get_mqtt_access_en() {
+  if(!options[OPTION_MQS].sval.length() == 0 &&
+     !options[OPTION_MQTS].sval.length() == 0)
+     return true;
   return false;
 }
 

@@ -57,6 +57,7 @@ public:
   static byte get_led()    { return digitalRead(PIN_LED); }
   static bool get_cloud_access_en();
   static bool get_local_access_en();
+  static bool get_mqtt_access_en();
   static void set_led(byte status)   { digitalWrite(PIN_LED, status); }
   static void set_relay(byte status) { digitalWrite(PIN_RELAY, status); }
   static void click_relay() {

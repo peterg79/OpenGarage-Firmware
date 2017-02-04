@@ -17,6 +17,10 @@
       <option value=2>Cloud Only</option>
       </select></td></tr>      
       <tr><td><b>Cloud Token:</b></td><td><input type='text' size=24 maxlength=32 id='auth' data-mini='true' value='-'></td></tr>
+      <tr><td><b>MQTT Server:</b></td><td><input type='text' size=24 maxlength=64 id='mqs' data-mini='true' value='-'></td></tr>
+      <tr><td><b>MQTT Port:</b></td><td><input type='text' size=5 maxlength=5 id='mqp' value=1 data-mini='true'></td></tr>
+      <tr><td><b>MQTT Status Topic:</b></td><td><input type='text' size=24 maxlength=64 id='mqts' data-mini='true' value='-'></td></tr>
+      <tr><td><b>MQTT Command Topic:</b></td><td><input type='text' size=24 maxlength=64 id='mqtc' data-mini='true' value='-'></td></tr>
       <tr><td><b>Mount Type:</b></td><td>
       <select name='mnt' id='mnt' data-mini='true'>
       <option value=0>Ceiling Mount</option>
@@ -88,6 +92,10 @@
         comm+='&name='+encodeURIComponent($('#name').val());
         comm+='&auth='+encodeURIComponent($('#auth').val());
         comm+='&iftt='+encodeURIComponent($('#iftt').val());
+        comm+='&mqs='+encodeURIComponent($('#mqs').val());
+        comm+='&mqp='+$('#mqp').val();
+        comm+='&mqts='+encodeURIComponent($('#mqts').val());
+        comm+='&mqtc='+encodeURIComponent($('#mqtc').val());
         if($('#cb_key').is(':checked')) {
           if(!$('#nkey').val()) {
             if(!confirm('New device key is empty. Are you sure?')) return;
@@ -121,6 +129,10 @@
         $('#name').val(jd.name);
         $('#auth').val(jd.auth);
         $('#iftt').val(jd.iftt);
+        $('#mqs').val(jd.mqs);
+        $('#mqp').val(jd.mqp);
+        $('#mqts').val(jd.mqts);
+        $('#mqtc').val(jd.mqtc);
       });
     });
   </script>

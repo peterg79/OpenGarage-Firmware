@@ -44,6 +44,11 @@
 // Log file name
 #define LOG_FNAME       "/log.dat"
 
+// Default MQTT status topic
+#define DEFAULT_MQTT_TOPIC_STATUS    "opengarage/status"
+// Default MQTT command topic
+#define DEFAULT_MQTT_TOPIC_COMMAND    "opengarage/command"
+
 #define OG_ACC_LOCAL    0x00
 #define OG_ACC_BOTH     0x01
 #define OG_ACC_CLOUD    0x02
@@ -105,6 +110,10 @@ typedef enum {
   OPTION_DKEY,    // device key
   OPTION_NAME,    // device name
   OPTION_IFTT,    // IFTTT token
+  OPTION_MQS,     // mqtt server
+  OPTION_MQP,     // mqtt port
+  OPTION_MQTS,    // mqtt status topic
+  OPTION_MQTC,    // mqtt command topic
   NUM_OPTIONS     // number of options
 } OG_OPTION_enum;
 

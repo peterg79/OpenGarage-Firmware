@@ -28,10 +28,13 @@
 #include "OpenGarage.h"
 #include "espconnect.h"
 #include <BlynkSimpleEsp8266.h>
+#include <PubSubClient.h>
 
 OpenGarage og;
 ESP8266WebServer *server = NULL;
 BlynkWifi Blynk(_blynkTransport);
+WiFiClient wifiClient;
+PubSubClient MqttClient;
 
 WidgetLED blynk_led(BLYNK_PIN_LED);
 WidgetLCD blynk_lcd(BLYNK_PIN_LCD);
@@ -42,6 +45,7 @@ static uint distance = 0;
 static byte door_status = 0;
 static bool curr_cloud_access_en = false;
 static bool curr_local_access_en = false;
+static bool curr_mqtt_access_en = false;
 static uint led_blink_ms = LED_FAST_BLINK;
 static ulong restart_timeout = 0;
 static ulong justopen_timestamp = 0;
@@ -407,6 +411,7 @@ void do_setup()
   og.options_setup();
   curr_cloud_access_en = og.get_cloud_access_en();
   curr_local_access_en = og.get_local_access_en();
+  curr_mqtt_access_en = og.get_mqtt_access_en();
   curr_mode = og.get_mode();
   if(!server) {
     server = new ESP8266WebServer(og.options[OPTION_HTP].ival);
@@ -625,6 +630,20 @@ void check_status() {
       str += " " + get_ap_ssid();
       blynk_lcd.print(0, 1, str);
     }
+    // report status to mqtt
+    if (curr_mqtt_access_en && MqttClient.connected()) {
+      const String &topics = og.options[OPTION_MQTS].sval;
+      String str = "{\"name\":\"";
+      str += og.options[OPTION_NAME].sval;
+      str += "\",\"status\":\"";
+      str += (door_status) ? "OPEN":"CLOSED";
+      str += "\",\"distance\": ";
+      str += distance;
+      str += ",\"timestamp\": ";
+      str += curr_utc_time;
+      str += "}";
+      MqttClient.publish(topics.c_str(), str.c_str());
+    }
 
     perform_automation(event);
 
@@ -682,6 +701,33 @@ void process_alarm() {
   }
 }
 
+void callback(char* topic, byte* payload, unsigned int length) {
+  // ignore topic
+  int command = 0;
+  String commandStr;
+  for (unsigned int i=0; i<length; i++) {
+    commandStr += (char)payload[i];
+  }
+  commandStr.trim();
+  commandStr.toUpperCase();
+  if (commandStr.equals("OPEN")) {
+    command = 1;
+  } else if (commandStr.equals("CLOSE")) {
+    command = 0;
+  } else {
+    return;
+  }
+  if (door_status != command) {
+    if (!door_status || !og.options[OPTION_ALM].ival) {
+      // if door is closed or alarm is not enabled, trigger relay right away
+      og.click_relay();
+    } else {
+      // else, set alarm
+      og.set_alarm();
+    }
+  }
+}
+
 void do_loop() {
   static ulong connecting_timeout;
   
@@ -734,6 +780,14 @@ void do_loop() {
         Blynk.begin(og.options[OPTION_AUTH].sval.c_str());
         Blynk.connect();
       }
+      if(curr_mqtt_access_en) {
+        const String &server = og.options[OPTION_MQS].sval;
+        int port = og.options[OPTION_MQP].ival;
+        MqttClient.setServer(server.c_str(), port);
+        MqttClient.setClient(wifiClient);
+        MqttClient.setCallback(callback);
+        MqttClient.connect(og.options[OPTION_NAME].sval.c_str());
+      }
       og.state = OG_STATE_CONNECTED;
       led_blink_ms = 0;
       og.set_led(LOW);
@@ -756,6 +810,8 @@ void do_loop() {
           server->handleClient();
         if(curr_cloud_access_en)
           Blynk.run();
+        if (curr_mqtt_access_en)
+          MqttClient.loop();
       } else {
         og.state = OG_STATE_INITIAL;
       }
