@@ -54,6 +54,8 @@ OptionStruct OpenGarage::options[] = {
   {"iftt", 0, 0, ""},
   {"mqs", 0, 0, ""},
   {"mqp", 1883, 65535, ""},
+  {"mqu", 0, 0, ""},
+  {"mqw", 0, 0, ""},
   {"mqts", 0, 0, DEFAULT_MQTT_TOPIC_STATUS},
   {"mqtc", 0, 0, DEFAULT_MQTT_TOPIC_COMMAND}
 };

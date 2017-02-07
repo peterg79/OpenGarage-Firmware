@@ -112,6 +112,8 @@ typedef enum {
   OPTION_IFTT,    // IFTTT token
   OPTION_MQS,     // mqtt server
   OPTION_MQP,     // mqtt port
+  OPTION_MQU,     // mqtt username
+  OPTION_MQW,     // mqtt password
   OPTION_MQTS,    // mqtt status topic
   OPTION_MQTC,    // mqtt command topic
   NUM_OPTIONS     // number of options

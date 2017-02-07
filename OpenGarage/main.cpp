@@ -642,7 +642,7 @@ void check_status() {
       str += ",\"timestamp\": ";
       str += curr_utc_time;
       str += "}";
-      MqttClient.publish(topics.c_str(), str.c_str());
+      MqttClient.publish(topics.c_str(), str.c_str(), true);
     }
 
     perform_automation(event);
@@ -783,10 +783,12 @@ void do_loop() {
       if(curr_mqtt_access_en) {
         const String &server = og.options[OPTION_MQS].sval;
         int port = og.options[OPTION_MQP].ival;
+        const String &user = og.options[OPTION_MQU].sval;
+        const String &passw = og.options[OPTION_MQW].sval;
         MqttClient.setServer(server.c_str(), port);
         MqttClient.setClient(wifiClient);
         MqttClient.setCallback(callback);
-        MqttClient.connect(og.options[OPTION_NAME].sval.c_str());
+        MqttClient.connect(og.options[OPTION_NAME].sval.c_str(), user.c_str(), passw.c_str());
       }
       og.state = OG_STATE_CONNECTED;
       led_blink_ms = 0;
@@ -811,7 +813,12 @@ void do_loop() {
         if(curr_cloud_access_en)
           Blynk.run();
         if (curr_mqtt_access_en)
-          MqttClient.loop();
+          if (!MqttClient.loop()) {
+            // onnection lost. reconnect
+            const String &user = og.options[OPTION_MQU].sval;
+            const String &passw = og.options[OPTION_MQW].sval;
+            MqttClient.connect(og.options[OPTION_NAME].sval.c_str(), user.c_str(), passw.c_str());
+          }
       } else {
         og.state = OG_STATE_INITIAL;
       }
